@@ -19,13 +19,15 @@ def group_consec(inputList):
     for k, g in iter.groupby(enumerate(inputList), lambda (i,x):i-x):
         group = map(itemgetter(1), g)
         ranges.append((group[0], group[-1]))
+    #print 'ranges', ranges
+    #print 'num links ', len(ranges)
     return len(ranges)
 
 def Mdistr(repeats = 10000):
-    N = 8
+    N = 32
     max_links = np.zeros([repeats, 1])
     for i in range(0,repeats):
-        print 'iterating', i
+        #print 'iterating', i
         max_links[i] = Nlinks(N)
     #calc mean
     mean = np.mean(max_links)
@@ -33,8 +35,8 @@ def Mdistr(repeats = 10000):
     stdev = np.std(max_links)
     #plot distribution
     
-    #plt.hist(max_links)
-    #plt.show()
+    plt.hist(max_links)
+    plt.show()
     
     print 'avg= ', mean, 'stdev = ', stdev
     return mean, stdev
@@ -48,12 +50,11 @@ def Nlinks(N=8):
         index = np.random.randint(0, len(bagList))
         linksList.append(bagList[index])
         linksList.sort()
+        #print linksList
         bagList = np.delete(bagList, index)
         numLinks = group_consec(linksList)
         if numLinks>M:
             M = numLinks
-        #order and form chains of consecutive integers in the linksList
-        #itertools
         
     return M
 
