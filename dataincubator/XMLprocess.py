@@ -38,11 +38,21 @@ def postsCount(xmlTree):
     return postCount
 def scoring(xmlTree):
     root = xmlTree.getroot()
-    average_score = 0
-    for child in root:
-        print(child.tag, child.attrib)
+    post_total_score = 0
+    answer_total_score = 0
+    postCount = 0
+    answerCount = 0
+    for row in root.findall('row'):
+        if row.attrib['PostTypeId']=='1':
+            post_total_score = float(row.attrib['Score'])+post_total_score
+            postCount = postCount +1
+        else:
+            answer_total_score = float(row.attrib['Score'])+answer_total_score
+            answerCount = answerCount +1
+    post_average_score = float(post_total_score)/postCount
     
-    return average_score
+    answer_average_score = float(answer_total_score)/answerCount
+    return post_average_score, answer_average_score
 ######################################################
                                                     ##
                                                     ##                                                        
@@ -55,21 +65,22 @@ def parseXML():
             path = homePath + file
     
     #Question 1        
-    Tagsfile = homePath +'Tags.xml'
-    tagsTree = ET.parse(Tagsfile)
+#     Tagsfile = homePath +'Tags.xml'
+#     tagsTree = ET.parse(Tagsfile)
     Postsfile = homePath + 'Posts.xml'
     postsTree = ET.parse(Postsfile)
-    ithTag= tagSorting(tagsTree)
-    ithTagCount = float(ithTag[1])
+#     ithTag= tagSorting(tagsTree)
+#     ithTagCount = float(ithTag[1])
     postCount = postsCount(postsTree)
-    print 'Fraction of posts with fifth most popular tag = ', ithTagCount/postCount
+    
+#     print 'Fraction of posts with fifth most popular tag = ', ithTagCount/postCount
 
     #Question 2
     
-#     Votesfile = homePath + 'Votes.xml'
-#     votesTree = ET.parse(Votesfile)
-    #average_score= scoring(postsTree)
-    
+    #Votesfile = homePath + 'Votes.xml'
+    #votesTree = ET.parse(Votesfile)
+    postAvgScore, answerAvgScore= scoring(postsTree)
+    print 'Post Avg Score = ', postAvgScore, 'Answer Avg Score = ', answerAvgScore
     
     
     
