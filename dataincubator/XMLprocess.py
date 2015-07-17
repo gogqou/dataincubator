@@ -9,6 +9,7 @@ import xml.etree.ElementTree as ET
 import xml
 import glob
 import os
+import collections
 ########################################################
                                                      ###
 def tagSorting(xmlTree):
@@ -36,6 +37,7 @@ def postsCount(xmlTree):
             postCount = postCount + 1
     
     return postCount
+#######################################################
 def scoring(xmlTree):
     root = xmlTree.getroot()
     post_total_score = 0
@@ -53,6 +55,26 @@ def scoring(xmlTree):
     
     answer_average_score = float(answer_total_score)/answerCount
     return post_average_score, answer_average_score
+                                                    ###
+#######################################################
+def userRep(userxmlTree, postxmlTree):
+    PearsonCorrelation=0
+    userRoot = userxmlTree.getroot()
+    postRoot = postxmlTree.getroot()
+    userDict = collections.defaultdict(list)
+    for child in userRoot:
+        userDict[child.attrib['Id']].append(child.attrib['Reputation'])
+        userDict[child.attrib['Id']].append(0)
+    print userRoot.findall('row')[1].attrib['Id']
+    for child in postRoot:
+        if 'OwnerUserId' in child.attrib.keys():
+            if child.attrib['OwnerUserId'] in userDict:
+                #print userDict[child.attrib['OwnerUserId']]
+                print 'check'
+                userDict[child.attrib['OwnerUserId']][1] = userDict[child.attrib['OwnerUserId']][1] + float(child.attrib['Score'])
+        
+    print userDict[2]
+    return PearsonCorrelation
 ######################################################
                                                     ##
                                                     ##                                                        
@@ -71,19 +93,20 @@ def parseXML():
     postsTree = ET.parse(Postsfile)
 #     ithTag= tagSorting(tagsTree)
 #     ithTagCount = float(ithTag[1])
-    postCount = postsCount(postsTree)
+    #postCount = postsCount(postsTree)
     
 #     print 'Fraction of posts with fifth most popular tag = ', ithTagCount/postCount
 
     #Question 2
     
-    #Votesfile = homePath + 'Votes.xml'
-    #votesTree = ET.parse(Votesfile)
-    postAvgScore, answerAvgScore= scoring(postsTree)
-    print 'Post Avg Score = ', postAvgScore, 'Answer Avg Score = ', answerAvgScore
     
+    #postAvgScore, answerAvgScore= scoring(postsTree)
+    #print 'Post Avg Score = ', postAvgScore, 'Answer Avg Score = ', answerAvgScore
     
-    
+    #Question 3
+    Usersfile = homePath + 'Users.xml'
+    userTree = ET.parse(Usersfile)
+    correlationP = userRep(userTree, postsTree)
     #for child in root:
         #print(child.tag, child.attrib)
     
