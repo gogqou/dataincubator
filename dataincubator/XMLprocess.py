@@ -47,10 +47,11 @@ def scoring(xmlTree):
     postCount = 0
     answerCount = 0
     for row in root.findall('row'):
+        #PostTypeId = 1 means it's a question
         if row.attrib['PostTypeId']=='1':
             post_total_score = float(row.attrib['Score'])+post_total_score
             postCount = postCount +1
-        else:
+        elif row.attrib['PostTypeId']==2:
             answer_total_score = float(row.attrib['Score'])+answer_total_score
             answerCount = answerCount +1
     post_average_score = float(post_total_score)/postCount
@@ -59,15 +60,14 @@ def scoring(xmlTree):
     return post_average_score, answer_average_score
                                                     ###
 #######################################################
+                                                    ###
 def userRep(userxmlTree, postxmlTree):
-    PearsonCorrelation=0
     userRoot = userxmlTree.getroot()
     postRoot = postxmlTree.getroot()
     userDict = collections.defaultdict(list)
     for child in userRoot:
         userDict[child.attrib['Id']].append(float(child.attrib['Reputation']))
         userDict[child.attrib['Id']].append(0)
-    print userRoot.findall('row')[1].attrib['Id']
     for child in postRoot:
         if 'OwnerUserId' in child.attrib.keys():
             if child.attrib['OwnerUserId'] in userDict:
@@ -82,6 +82,16 @@ def userRep(userxmlTree, postxmlTree):
     print full_array    
     PearsonCorrelation = pearsonr(full_array[:,0], full_array[:,1])    
     return PearsonCorrelation
+                                                    ###
+#######################################################
+def upVotes(postxmlTree, votesxmlTree):
+    postsRoot = postxmlTree.getroot()
+    #for child in postsRoot:
+        #print(child.tag, child.attrib.keys())
+    votesRoot = votesxmlTree.getroot()
+    for child in votesRoot:
+        print(child.tag, child.attrib)
+    return 1
 ######################################################
                                                     ##
                                                     ##                                                        
@@ -105,18 +115,23 @@ def parseXML():
 #     print 'Fraction of posts with fifth most popular tag = ', ithTagCount/postCount
 
     #Question 2
-    
-    
+       
     #postAvgScore, answerAvgScore= scoring(postsTree)
     #print 'Post Avg Score = ', postAvgScore, 'Answer Avg Score = ', answerAvgScore
     
     #Question 3
-    Usersfile = homePath + 'Users.xml'
-    userTree = ET.parse(Usersfile)
-    correlationP = userRep(userTree, postsTree)
-    print correlationP
+    #Usersfile = homePath + 'Users.xml'
+    #userTree = ET.parse(Usersfile)
+    #correlationP = userRep(userTree, postsTree)
+    #print 'Correlation coefficient and two-tailed pvalue= ', correlationP
     #for child in root:
         #print(child.tag, child.attrib)
+    
+    
+    #Question 4
+    Votesfile = homePath + 'Votes.xml'
+    votesTree = ET.parse(Votesfile)
+    upVotes(postsTree, votesTree)
     
     return 1
                                                     ##
