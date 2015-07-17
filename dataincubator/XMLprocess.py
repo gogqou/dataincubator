@@ -10,6 +10,8 @@ import xml
 import glob
 import os
 import collections
+import numpy as np
+from scipy.stats.stats import pearsonr
 ########################################################
                                                      ###
 def tagSorting(xmlTree):
@@ -63,17 +65,22 @@ def userRep(userxmlTree, postxmlTree):
     postRoot = postxmlTree.getroot()
     userDict = collections.defaultdict(list)
     for child in userRoot:
-        userDict[child.attrib['Id']].append(child.attrib['Reputation'])
+        userDict[child.attrib['Id']].append(float(child.attrib['Reputation']))
         userDict[child.attrib['Id']].append(0)
     print userRoot.findall('row')[1].attrib['Id']
     for child in postRoot:
         if 'OwnerUserId' in child.attrib.keys():
             if child.attrib['OwnerUserId'] in userDict:
                 #print userDict[child.attrib['OwnerUserId']]
-                print 'check'
+                #print child.attrib['OwnerUserId'], userDict[child.attrib['OwnerUserId']]
                 userDict[child.attrib['OwnerUserId']][1] = userDict[child.attrib['OwnerUserId']][1] + float(child.attrib['Score'])
-        
-    print userDict[2]
+    full_array = np.empty([len(userDict), 2])
+    i = 0
+    for value in userDict.itervalues():
+        full_array[i]=value
+        i=i+1
+    print full_array    
+    PearsonCorrelation = pearsonr(full_array[:,0], full_array[:,1])    
     return PearsonCorrelation
 ######################################################
                                                     ##
@@ -107,6 +114,7 @@ def parseXML():
     Usersfile = homePath + 'Users.xml'
     userTree = ET.parse(Usersfile)
     correlationP = userRep(userTree, postsTree)
+    print correlationP
     #for child in root:
         #print(child.tag, child.attrib)
     
