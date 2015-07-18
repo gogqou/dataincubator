@@ -86,11 +86,15 @@ def userRep(userxmlTree, postxmlTree):
 #######################################################
 def upVotes(postxmlTree, votesxmlTree):
     postsRoot = postxmlTree.getroot()
-    #for child in postsRoot:
-        #print(child.tag, child.attrib.keys())
     votesRoot = votesxmlTree.getroot()
+    voteDict = collections.defaultdict(list)
     for child in votesRoot:
-        print(child.tag, child.attrib)
+        if child.attrib['VoteTypeId'] == 2:
+            voteDict[child.attrib['VoteTypeId']] = voteDict[child.attrib['VoteTypeId']].append(1)
+    #print voteDict.keys()
+    
+    #for child in votesRoot:
+     #   print(child.tag, child.attrib)
     return 1
 ######################################################
                                                     ##
