@@ -88,10 +88,12 @@ def upVotes(postxmlTree, votesxmlTree):
     postsRoot = postxmlTree.getroot()
     votesRoot = votesxmlTree.getroot()
     voteDict = collections.defaultdict(list)
-    for child in votesRoot:
-        if child.attrib['VoteTypeId'] == 2:
-            voteDict[child.attrib['VoteTypeId']] = voteDict[child.attrib['VoteTypeId']].append(1)
-    #print voteDict.keys()
+    
+    for row in votesRoot.findall('row'):
+        if row.attrib['VoteTypeId']=='2':
+            print row.attrib['PostId']
+            voteDict[row.attrib['PostId']] = voteDict[row.attrib['PostId']].append(1)
+    print voteDict.keys()
     
     #for child in votesRoot:
      #   print(child.tag, child.attrib)
