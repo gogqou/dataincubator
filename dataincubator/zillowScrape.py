@@ -208,7 +208,7 @@ def rentAnalysis():
     fit_fn = np.poly1d(fit) 
     slope, intercept, r_value, p_value, std_err = stats.linregress(listingData[:,2],listingData[:,0])
     plt.plot(listingData[:,2], fit_fn(listingData[:,2]), '--b', label ='r_sq= ' +str(round(r_value, 2)))
-    plt.ylabel('Price')
+    plt.ylabel('Price ')
     plt.xlabel('# Bedrooms')
     plt.legend(loc="lower right") 
     #plt.grid(True)
