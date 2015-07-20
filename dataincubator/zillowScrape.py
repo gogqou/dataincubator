@@ -16,6 +16,8 @@ import requests
 import bs4
 import csv
 import matplotlib.pyplot as plt
+import statsmodels.api as sm
+import scipy.stats as stats
 class Listing(object):
     def __init__(self, ListingURL):
         self.URL = 'http://www.zillow.com'+ListingURL
@@ -168,33 +170,68 @@ def rentAnalysis():
     #writeDicttocsv(populated_Listings, 'Listing_stats.csv')
     
     listingData= np.genfromtxt('Listing_stats.csv', delimiter = ",")
+    listingData = listingData[~np.isnan(listingData).any(axis=1)]
     
-    listingData = np.nan_to_num(listingData)
     print listingData[:,0]
-    fig = plt.figure()
-    plt.subplot(3,1,1)
+   
+    fig, ax = plt.subplots()
+    
+    
+    plt.subplot(2,1,1)
     plt.hist(listingData[:,0])
     plt.ylabel('Frequency')
     plt.xlabel('Price')
     plt.xlim((0,15000))
     
-    plt.subplot(3,1,2)
-    plt.scatter(listingData[:,2], listingData[:,0], marker = 'o', s = 2)
+    
+    
+    
+    plt.subplot(2,1,2)
+    plt.scatter(listingData[:,4], listingData[:,0], marker = 'o', s = 2)
+    plt.ylabel('Price')
+    plt.xlabel('Square Footage')
+    #plt.grid(True)
+    plt.ylim((0,15000))
+    plt.xlim((0,10000))
+    fig.savefig('Observations_Plots.png')
+    plt.close()
+    
+    fig2 = plt.figure()
+    prices = listingData[:,0]
+    xVar = listingData[:,1:4]
+    X = sm.add_constant(xVar)
+    est = sm.OLS(prices,X).fit()
+    
+    plt.subplot(2,1,1)
+    plt.scatter(listingData[:,2], listingData[:,0], marker = 'o',label= '# Bedrooms', s = 2)
+    fit = np.polyfit(listingData[:,2],listingData[:,0],1)
+    fit_fn = np.poly1d(fit) 
+    slope, intercept, r_value, p_value, std_err = stats.linregress(listingData[:,2],listingData[:,0])
+    plt.plot(listingData[:,2], fit_fn(listingData[:,2]), '--b', label ='r_sq= ' +str(round(r_value, 2)))
     plt.ylabel('Price')
     plt.xlabel('# Bedrooms')
+    plt.legend(loc="lower right") 
     #plt.grid(True)
     plt.ylim((0,15000))
     plt.xlim((0,6))
     
-    plt.subplot(3,1,3)
-    plt.scatter(listingData[:,3], listingData[:,0], marker = 'o', s = 2)
+    plt.subplot(2,1,2)
+    plt.scatter(listingData[:,3], listingData[:,0], marker = 'o', label= '# Bathrooms', s = 4)
+    fit = np.polyfit(listingData[:,3],listingData[:,0],1)
+    fit_fn = np.poly1d(fit) 
+    slope, intercept, r_value, p_value, std_err = stats.linregress(listingData[:,3],listingData[:,0])
+    plt.plot(listingData[:,3], fit_fn(listingData[:,3]), '--b', label ='r_sq= ' +str(round(r_value, 2)))
+    plt.legend(loc="lower right") 
     plt.ylabel('Price')
     plt.xlabel('# Bathrooms')
+    
     #plt.grid(True)
-    #plt.ylim((0,15000))
-    #plt.xlim((0,5))
-    fig.savefig('Observations_Plots.png')
+    plt.ylim((0,15000))
+    plt.xlim((0,5))
+    print est.summary()
+    fig2.savefig('RegressionPlots.png')
     plt.close()
+    
     return 1
 if __name__ == '__main__':
     rentAnalysis()
