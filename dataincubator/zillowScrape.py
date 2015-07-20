@@ -90,16 +90,30 @@ def getListingAttribs(linksdict):
         linksdict[key]=fetchListingPage(value)
     return linksdict
 def fetchListingPage(Listing):
-    
     listingPage = requests.get(Listing.URL)
+    print Listing.URL
     Listing.fullpageData = bs4.BeautifulSoup(listingPage.text, 'lxml')
+    Listing.Facts = Listing.fullpageData.find_all('ul', {"class": 'zsg-list_square zsg-lg-1-3 zsg-md-1-2 zsg-sm-1-1' })
+    descriptor = Listing.fullpageData.find_all('div',{"class": 'notranslate' })
+    if len(descriptor)>0:
+        Listing.Descriptor = descriptor[0]
+    else:
+        Listing.include = False
+        print 'no descriptor'
     for itemText in Listing.fullpageData.find_all('div',{"class":'main-row home-summary-row'}):
         Listing.priceLabel = itemText.text   
-        #print itemText.find('span', class_ = "")
         #print itemText.find('span', id = re.compile(r'\$[0-9,]+'))
+    BBS = Listing.fullpageData.find_all('span', class_ = 'addr_bbs')
+    if len(BBS)>0:
+        Listing.beds = BBS[0].text
+        Listing.baths = BBS[1].text
+        Listing.sqft = BBS[2].text
+        print Listing.beds, Listing.baths, Listing.sqft
+    else:
+        Listing.include = False
+        print 'no BBS descriptors'
     
-    #schools = Listing.fullpageData.findAll("div", class_= "nearby-schools-footer")
-    #print schools
+    
     return Listing
                                                                   ##
 ####################################################################
