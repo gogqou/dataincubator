@@ -105,9 +105,16 @@ def fetchListingPage(Listing):
         #print itemText.find('span', id = re.compile(r'\$[0-9,]+'))
     BBS = Listing.fullpageData.find_all('span', class_ = 'addr_bbs')
     if len(BBS)>0:
-        Listing.beds = BBS[0].text
-        Listing.baths = BBS[1].text
-        Listing.sqft = BBS[2].text
+        if 'Studio' in BBS[0].text:
+            Listing.beds = 0
+        else:
+            Listing.beds = float(re.split('bed', BBS[0].text)[0])
+        Listing.baths = float(re.split('bath', BBS[1].text)[0])
+        if '--' in BBS[2].text:
+            Listing.sqft = None
+        else:
+            Listing.sqft = re.split('sqft', BBS[2].text)[0]
+            Listing.sqft=float(Listing.sqft.replace(',', ''))
         print Listing.beds, Listing.baths, Listing.sqft
     else:
         Listing.include = False
