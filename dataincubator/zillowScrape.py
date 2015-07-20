@@ -15,6 +15,7 @@ import re
 import requests
 import bs4
 import csv
+import matplotlib.pyplot as plt
 class Listing(object):
     def __init__(self, ListingURL):
         self.URL = 'http://www.zillow.com'+ListingURL
@@ -160,11 +161,40 @@ def rentAnalysis():
     #linksDict = getURLs(first_page_URL)
     #write_dict_to_file(linksDict)
     
-    #read from URLs txt file to populate a dictionary of Listing objects
-    listingList = read_dict_from_file ('listingURLs.txt')
-    listingDict=makeListtoDict(listingList)
-    populated_Listings = getListingAttribs(listingDict)
-    writeDicttocsv(populated_Listings, 'Listing_stats.csv')
+    ##~read from URLs txt file to populate a dictionary of Listing objects~##
+    #listingList = read_dict_from_file ('listingURLs.txt')
+    #listingDict=makeListtoDict(listingList)
+    #populated_Listings = getListingAttribs(listingDict)
+    #writeDicttocsv(populated_Listings, 'Listing_stats.csv')
+    
+    listingData= np.genfromtxt('Listing_stats.csv', delimiter = ",")
+    
+    listingData = np.nan_to_num(listingData)
+    print listingData[:,0]
+    fig = plt.figure()
+    plt.subplot(3,1,1)
+    plt.hist(listingData[:,0])
+    plt.ylabel('Frequency')
+    plt.xlabel('Price')
+    plt.xlim((0,15000))
+    
+    plt.subplot(3,1,2)
+    plt.scatter(listingData[:,2], listingData[:,0], marker = 'o', s = 2)
+    plt.ylabel('Price')
+    plt.xlabel('# Bedrooms')
+    #plt.grid(True)
+    plt.ylim((0,15000))
+    plt.xlim((0,6))
+    
+    plt.subplot(3,1,3)
+    plt.scatter(listingData[:,3], listingData[:,0], marker = 'o', s = 2)
+    plt.ylabel('Price')
+    plt.xlabel('# Bathrooms')
+    #plt.grid(True)
+    #plt.ylim((0,15000))
+    #plt.xlim((0,5))
+    fig.savefig('Observations_Plots.png')
+    plt.close()
     return 1
 if __name__ == '__main__':
     rentAnalysis()
