@@ -14,9 +14,11 @@ import numpy as np
 import re
 import requests
 import bs4
+import csv
 class Listing(object):
     def __init__(self, ListingURL):
         self.URL = 'http://www.zillow.com'+ListingURL
+        self.include = True
 ####################################################################
                                                                   ##
 def getURLs(first_page_URL):
@@ -50,6 +52,15 @@ def makeListtoDict (List):
     for item in List:
         listDict[item] = Listing(item) #making it a listing object with URL
     return listDict
+
+def writeDicttocsv(dictionary, filename):
+    fp = open(filename, 'wb')
+    a = csv.writer(fp)
+    for v in dictionary.itervalues():
+        if v.include is True:
+            a.writerow([v.price, v.DescriptorLen, v.beds, v.baths, v.sqft])
+    fp.close()
+    return 1
                                                                   ##
 ####################################################################
 
@@ -90,37 +101,51 @@ def getListingAttribs(linksdict):
         linksdict[key]=fetchListingPage(value)
     return linksdict
 def fetchListingPage(Listing):
-    listingPage = requests.get(Listing.URL)
-    print Listing.URL
+    listingPage = requests.get(Listing.URL, allow_redirects=False)
+    #print Listing.URL
     Listing.fullpageData = bs4.BeautifulSoup(listingPage.text, 'lxml')
     Listing.Facts = Listing.fullpageData.find_all('ul', {"class": 'zsg-list_square zsg-lg-1-3 zsg-md-1-2 zsg-sm-1-1' })
     descriptor = Listing.fullpageData.find_all('div',{"class": 'notranslate' })
     if len(descriptor)>0:
         Listing.Descriptor = descriptor[0]
+        Listing.DescriptorLen = len(Listing.Descriptor)
     else:
         Listing.include = False
-        print 'no descriptor'
-    for itemText in Listing.fullpageData.find_all('div',{"class":'main-row home-summary-row'}):
-        Listing.priceLabel = itemText.text   
+        Listing.DescriptorLen = ''
+        #print 'no descriptor'
+    priceLabel = Listing.fullpageData.find_all('div',{"class":'main-row home-summary-row'})
+    if len(priceLabel)>0:
+        Listing.priceLabel = priceLabel[0].text   
         #print itemText.find('span', id = re.compile(r'\$[0-9,]+'))
+        price_temp = re.split('/', Listing.priceLabel)[0]
+        price = price_temp.replace(',', '')
+        Listing.price = price.replace('$', '')
+    else:
+        Listing.priceLabel = ''
+        Listing.price = ''
     BBS = Listing.fullpageData.find_all('span', class_ = 'addr_bbs')
     if len(BBS)>0:
         if 'Studio' in BBS[0].text:
             Listing.beds = 0
         else:
-            Listing.beds = float(re.split('bed', BBS[0].text)[0])
-        Listing.baths = float(re.split('bath', BBS[1].text)[0])
-        if '--' in BBS[2].text:
-            Listing.sqft = None
+            Listing.beds = re.split('bed', BBS[0].text)[0]
+        if '-' in BBS[1].text:
+            Listing.baths = ''
+        else:
+            Listing.baths = re.split('bath', BBS[1].text)[0]
+        if '-' in BBS[2].text:
+            Listing.sqft = ''
         else:
             Listing.sqft = re.split('sqft', BBS[2].text)[0]
-            Listing.sqft=float(Listing.sqft.replace(',', ''))
-        print Listing.beds, Listing.baths, Listing.sqft
+            Listing.sqft=Listing.sqft.replace(',', '')
+        
     else:
         Listing.include = False
-        print 'no BBS descriptors'
-    
-    
+        Listing.baths = ''
+        Listing.sqft = ''
+        Listing.beds = ''
+        #print 'no BBS descriptors'
+    print Listing.price, Listing.beds, Listing.baths, Listing.sqft, Listing.DescriptorLen
     return Listing
                                                                   ##
 ####################################################################
@@ -138,7 +163,8 @@ def rentAnalysis():
     #read from URLs txt file to populate a dictionary of Listing objects
     listingList = read_dict_from_file ('listingURLs.txt')
     listingDict=makeListtoDict(listingList)
-    populated_links = getListingAttribs(listingDict)
+    populated_Listings = getListingAttribs(listingDict)
+    writeDicttocsv(populated_Listings, 'Listing_stats.csv')
     return 1
 if __name__ == '__main__':
     rentAnalysis()
